@@ -43,13 +43,27 @@ Next, the span element displays the value of the count. To display any value, us
 </div>
 ```
 
-Finally, use "action:" to create event handlers. Actions are always assignment statements.
+Finally, use "action:" to create event handlers. Actions are always assignment statements. Note that you may have to reload the page prior to adding new actions, otherwise it might not register correctly.
+
+```html
+<div>
+    <script>
+        c = {color:'red'}
+    </script>
+    <span style="expr:c">hello</span>
+    <button onClick="action:c={color:'blue'}">blue</button>
+    <button onClick="action:c={color:'red'}">red</button>
+</div>
+```
+
+or
 
 ```html
 <div>
     <script>
         c = 'red'
     </script>
+    <!--todo: make this work-->
     <span style="expr:{color:c}">hello</span>
     <button onClick="action:c='blue'">blue</button>
     <button onClick="action:c='red'">red</button>
