@@ -40,7 +40,8 @@ function App() {
       nw.server = process.env.REACT_APP_API_SERVER
     
     nw.onStart(()=>setConnected(true))
-    nw.when('authfail', ()=>signout())
+    nw.when('authfail', ()=>signout()) 
+    nw.when('autherror', ()=>signout())
   }, []);
 
   if(!authorized)
