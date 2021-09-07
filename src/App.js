@@ -11,7 +11,7 @@ import {
   Route
 } from "react-router-dom";
 
-nw.debug_level = 2
+//nw.debug_level = 2
 
 function App() {
   const [authorized, setAuthorized] = useState(false);
@@ -26,7 +26,7 @@ function App() {
 
   const signin = (tok) => {
     setAuthorized(true);
-    nw.connect({ token: tok, server: process.env.REACT_APP_API_SERVER });
+    nw.connect({ token: tok, server: process.env.REACT_APP_API_SERVER, use_tls: window.location.protocol === 'https:'});
   }
   
   useEffect(() => {
@@ -34,7 +34,7 @@ function App() {
     if(cred){
       setAuthorized(true)
       if(!nw.connected)
-        !nw.connect({ token: cred.token, server: process.env.REACT_APP_API_SERVER }) && signout();
+        !nw.connect({ token: cred.token, server: process.env.REACT_APP_API_SERVER, use_tls: window.location.protocol === 'https:' }) && signout();
     }
     else
       nw.server = process.env.REACT_APP_API_SERVER

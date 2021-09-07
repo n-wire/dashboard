@@ -1,7 +1,7 @@
 import {nw} from 'nodewire'
 
 async function invoke(func, json){
-    let response = await fetch('https://' + nw.server + `:${process.env.REACT_APP_API_SERVER_PORT}/`+ func, {
+    let response = await fetch(window.location.protocol+'//' + nw.server + `:${process.env.REACT_APP_API_SERVER_PORT}/`+ func, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
         mode: 'cors', // no-cors, *cors, same-origin
         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
