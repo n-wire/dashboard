@@ -51,7 +51,7 @@ export default class Widget extends React.Component{
             if(content === '' || content===undefined) content='<div />';
             var parser = new DOMParser();
             var xmlDoc = parser.parseFromString(content,"text/xml").children[0];
-            if(xmlDoc.nodeName !== "parsererror" && xmlDoc.nodeName!=='html')
+            if(xmlDoc.nodeName !== "parsererror" && xmlDoc.nodeName!=='html' && !xmlDoc.innerHTML.startsWith('<parsererror'))
                 return Widget.xml2json(xmlDoc);
             return { Type: 'div', content: xmlDoc.textContent };
         }

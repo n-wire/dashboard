@@ -54,7 +54,6 @@ export default function Code(props) {
 
     //thecode.on("change", (cm, change)=> { SetCode(thecode.getValue()); })
     thecode.on("blur", () => {
-      //execution.execute('_code="' + thecode.getValue() + '"')
       _.set(execution.vars,'_code', thecode.getValue());
       props.onEvent('thecode.getValue()');
     })
