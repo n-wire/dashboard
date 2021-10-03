@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Dashboard from './features/dashboard/Dashboard';
+import Dashboard from './features/dashboard/dash';
+import Develop from './features/develop/Develop';
 import './App.css';
 import { nw } from 'nodewire';
 import SignIn from './Signin.js'
@@ -11,7 +12,7 @@ import {
   Route
 } from "react-router-dom";
 
-//nw.debug_level = 2
+nw.debug_level = 2
 
 function App() {
   const [authorized, setAuthorized] = useState(false);
@@ -47,14 +48,14 @@ function App() {
   if(!authorized)
     return (
       <Router>
-      <Switch>
-        <Route path="/signup">
-          <SignUp />
-        </Route>
-        <Route path="/">
-          <SignIn success = {t=>signin(t)} />
-        </Route>
-      </Switch>
+        <Switch>
+          <Route path="/signup">
+            <SignUp />
+          </Route>
+          <Route path="/">
+            <SignIn success = {t=>signin(t)} />
+          </Route>
+        </Switch>
       </Router>
     )
   if(!connected)
@@ -62,7 +63,16 @@ function App() {
       <Splash />
     )
   return (
-    <Dashboard signout={signout}/>
+    <Router>
+      <Switch>
+        <Route path="/develop">
+          <Develop />
+        </Route>
+        <Route path="/">
+          <Develop signout={signout}/>
+        </Route>
+      </Switch>
+    </Router>
   );  
 }
 

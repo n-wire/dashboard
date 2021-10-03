@@ -195,8 +195,8 @@ export default class Widget extends React.Component{
                     execution.run();
                 },
                 onJson: (node, val) => {
-                    var content = JSON.parse(val.replace(/'/g, '"'));
-                    this.setState({content: content, format:'json'});
+                    //var content = JSON.parse(val.replace(/'/g, '"'));
+                    this.setState({content: val, format:'json'});
                 },
                 onVal: (node, val) => {
                     console.log('val', val);
@@ -228,7 +228,7 @@ export default class Widget extends React.Component{
 
     render () {
         return(
-              <Custom {...this.state.content} onEvent={this.props.onEvent}/>
+              <Custom {...this.state.content} />
         )
     }
 
