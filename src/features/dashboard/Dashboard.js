@@ -183,7 +183,7 @@ export default function Dashboard(props) {
         open={open}
       >
         <div className={classes.toolbarIcon}>
-          NodeWire
+          <img src="" />
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>

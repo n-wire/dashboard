@@ -2,6 +2,7 @@ import React from 'react';
 import { withStyles } from '@material-ui/styles';
 import PropTypes from 'prop-types';
 import {nw, Node} from 'nodewire';
+import { TextField } from '@mui/material';
 
 
 const useStyles =  {
@@ -138,7 +139,7 @@ class Console extends React.Component{
         return (
             <form className={classes.root} noValidate autoComplete="off" style={{width:'100%', height:"100%", boxSizing: "border-box"}}>
               <div className="field" style={{width:'100%', height:"100%", boxSizing: "border-box"}}>
-                <textarea variant="outlined" onKeyDown={this.handleKey} value={this.state.history+this.state.code} id="code" rows="6" style={{width:'100%', height:"100%", boxSizing: "border-box"}}></textarea>
+                <TextField multiline variant="outlined" onKeyDown={this.handleKey} value={this.state.history+this.state.code} id="code" rows="6" style={{width:'100%', height:"100%", boxSizing: "border-box"}}></TextField>
               </div>
             </form>
         )

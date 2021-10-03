@@ -51,6 +51,7 @@ export default class Custom extends React.Component{
 
     handleChange(e)
     {
+        console.log('change')
         if('change' in this.state.properties){
             let dp = this.state.properties.change.indexOf('.');
             let node = dp===-1?'':this.state.properties.change.slice(0,dp);
@@ -65,6 +66,7 @@ export default class Custom extends React.Component{
     isVar(expr){
         let isnum = /^\d+$/.test(expr);
         if(isnum || expr.startsWith('[') || expr.startsWith('{')) return false;
+        console.log('isvar', expr)
         return true
     }
 
@@ -75,7 +77,7 @@ export default class Custom extends React.Component{
             if(!this.firstPassDone) {
                 const operators = [" if ", " else ", " and ", " or ", " not ",  "==", "!=", ">", "<", ">=", "<=", "+", "-", "*", "/", "%"];
                 let index=0, op=0;
-                expr = expr.trim().replace('expr:', '');
+                expr = expr.replace('expr:', '').trim();
                 ({index, op} = execution.parse(expr));
                 if(index===0) {
                     if(this.isVar(expr) && this.vars.indexOf(expr)===-1)this.vars.push(expr);
@@ -102,7 +104,7 @@ export default class Custom extends React.Component{
                 }
                 
             }
-            return execution.eval(expr.trim().replace('expr:', ''));
+            return execution.eval(expr.replace('expr:', '').trim());
         }
         else if(typeof expr==='string' && expr.startsWith('json:'))
             return execution.eval(expr.replace('json:', ''));
@@ -114,6 +116,10 @@ export default class Custom extends React.Component{
                 //execution.doAction(`args=${para}`)
                 execution.execute(arguments[0].replace('action:',''));
             }
+        }
+        else if(typeof expr==='string' && expr.startsWith('component:'))
+        {
+            return <Custom  {...execution.eval(expr.replace('component:',''))} />
         }
         else {
             return expr;
@@ -238,7 +244,7 @@ export default class Custom extends React.Component{
                 {
                      cont = this.eval(this.state.properties.content);
                 }
-                var props = {className: this.state.properties.class};
+                var props = {};
                 for(let p in this.state.properties)
                 {
                     if(p!=='Type' && p!=='content')
