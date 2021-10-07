@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectActiveFileIndex, selectOpenFiles, updateFile } from '../develop/developSlice';
 
 let thecode;
-let thedoc;
+export let thedoc;
+export let activefile;
 
 export default function Code(props) {
   const dispatch = useDispatch();
@@ -12,19 +13,23 @@ export default function Code(props) {
   const fileIndex = useSelector(selectActiveFileIndex);
 
   const update = ()=> {
-    let activefile = files[fileIndex];
-    dispatch(updateFile({name: activefile.name, content: thecode.getValue(), type: activefile.type}))
+    if(!thedoc.isClean()){
+      activefile = files[fileIndex];
+      dispatch(updateFile({name: activefile.name, content: thecode.getValue(), type: activefile.type}))
+      thedoc.markClean();
+    }
   }
   
   React.useEffect(() => {
     thecode = window.CodeMirror.fromTextArea(document.getElementById(files[fileIndex].name), { value:  props.content, mode: props.mode, selectionPointer: true });
     thecode.on("blur", () => update())
-    thedoc = thecode.getDoc();
   }, []);
 
   React.useEffect(() => {
     thecode.setValue(files[fileIndex].content);
-    thecode.setSize('100%', `${props.height-2}px`)
+    thecode.setSize('100%', `${props.height-2}px`);
+    thedoc = thecode.getDoc();
+    activefile = files[fileIndex];
   }, [props]);
 
   return (

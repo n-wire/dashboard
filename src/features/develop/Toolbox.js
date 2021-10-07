@@ -19,7 +19,7 @@ export default function Toolbox() {
                     <Typography >Toolbox</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <Grid item container spacing={2} columns={9}>
+                    <Grid item container spacing={2} columns={6}>
                         {
                             Controls().map(control=>(
                                 <Grid item xs={3} key={control.name} onClick={()=>setSelected(control.name)}>

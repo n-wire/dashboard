@@ -19,9 +19,6 @@ export default class Custom extends React.Component{
 
       this.vars = [];
       this.firstPassDone = false;
-
-      this.handleSubmit = this.handleSubmit.bind(this);
-      this.handleChange = this.handleChange.bind(this);
       this.update = this.update.bind(this);
     }
 
@@ -31,36 +28,6 @@ export default class Custom extends React.Component{
             properties: props
         };
         return null;
-    }
-
-    handleSubmit(event) {
-        event.preventDefault();
-        if('submit' in this.state.properties){
-            let dp = this.state.properties.submit.indexOf('.');
-            let node = this.state.properties.submit.slice(0,dp);
-            let port = this.state.properties.submit.slice(dp+1);
-
-            let dd = {};
-            for(var key=0; key<event.target.length-1; key++){
-                dd[event.target[key].id] = event.target[key].value;
-            }
-
-            nw.setportvalue(node, port, dd);
-        }
-    }
-
-    handleChange(e)
-    {
-        console.log('change')
-        if('change' in this.state.properties){
-            let dp = this.state.properties.change.indexOf('.');
-            let node = dp===-1?'':this.state.properties.change.slice(0,dp);
-            let port = this.state.properties.change.slice(dp+1);
-            if(node==="")
-                execution.execute(`${port}="${e.target.value}"`)
-            else
-                nw.setportvalue(node, port, this.state.properties.type==='checkbox'? e.target.checked : e.target.value);
-        }
     }
 
     isVar(expr){
@@ -77,7 +44,7 @@ export default class Custom extends React.Component{
             if(!this.firstPassDone) {
                 const operators = [" if ", " else ", " and ", " or ", " not ",  "==", "!=", ">", "<", ">=", "<=", "+", "-", "*", "/", "%"];
                 let index=0, op=0;
-                expr = expr.replace('expr:', '').trim();
+                expr = expr.trim().replace('expr:', '');
                 ({index, op} = execution.parse(expr));
                 if(index===0) {
                     if(this.isVar(expr) && this.vars.indexOf(expr)===-1)this.vars.push(expr);
@@ -104,7 +71,7 @@ export default class Custom extends React.Component{
                 }
                 
             }
-            return execution.eval(expr.replace('expr:', '').trim());
+            return execution.eval(expr.trim().replace('expr:', ''));
         }
         else if(typeof expr==='string' && expr.startsWith('json:'))
             return execution.eval(expr.replace('json:', ''));
@@ -112,14 +79,14 @@ export default class Custom extends React.Component{
         {
             return (...para)=>{
                 //const args = Array.from(arguments);
-                //_.set('me.arguments', para);
+                _.set(execution.vars, '__args', para);
                 //execution.doAction(`args=${para}`)
                 execution.execute(arguments[0].replace('action:',''));
             }
         }
         else if(typeof expr==='string' && expr.startsWith('component:'))
         {
-            return <Custom  {...execution.eval(expr.replace('component:',''))} />
+            return this.processElement(execution.eval(expr.replace('component:','')))
         }
         else {
             return expr;
@@ -153,140 +120,120 @@ export default class Custom extends React.Component{
 
     }
 
-    render(){
-        if(this.state.hasError) return <h1>Something went wrong.</h1>;
-        if(this.state.properties.Type!==undefined && (this.state.properties.Type.endsWith('.xml') || this.state.properties.Type.endsWith('.json')))
+    static getDerivedStateFromError(error) {
+        // Update state so the next render will show the fallback UI.
+        return { hasError: true };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        // You can also log the error to an error reporting service
+        console.log(error, errorInfo);
+    }
+
+    processIter(element){
+        const {Type, content, ...properties} = element;
+        let thelist;
+        let cont = [];
+
+        thelist = execution.getVal(properties.channel.replace('expr:', ''));
+        for(let iter in thelist)
         {
-            var page = nw.pages.filter((p)=>{
-                return p.name===this.state.properties.Type;
-            });
-            if(page.length===0) return null;
-            return <Widget tab={page[0]} properties={this.state.properties}/>
+            let theitem = JSON.stringify(content);
+            theitem = theitem.replace(new RegExp('{'+properties.iter+'}', 'g'), iter);
+            let children = JSON.parse(theitem);
+
+            for(let cc of children)
+                cont.push(this.processElement(cc, iter))
         }
-        else if(this.state.properties.Type!==undefined)
+
+        if(Type in Widget.components)
+        {
+            return React.createElement(Widget.components[Type], this.processProps(properties), cont);
+        }
+        else
+            return React.createElement(Type, this.processProps(properties), cont);
+    }
+
+    processElement(element, key=0){
+        if(typeof element === 'string')
+            return element;
+        else if ('iter' in element){
+            return this.processIter(element);
+        }
+        else {
+            const {Type, content, ...props} = element;
+            let children;
+            if(Widget.pages.findIndex(p=>p.name==Type)!==-1)
+            {
+                var page = Widget.pages.find((p)=>{
+                    return p.name===Type;
+                });
+                if(page===undefined) return null;
+                return <Widget content={page.content} properties={(content!==undefined)?{...props, content}:props} format="xml" />
+            }
+            else if(content!==undefined && content.__proto__.constructor.name==="Array")
+            {
+                children = []
+                for(const child in content){
+                    children.push(this.processElement(content[child], child))
+                }
+            }
+            else
+                children = this.eval(content);
+
+            if(Type in Widget.components)
+            {
+                return React.createElement(Widget.components[Type], {...this.processProps(props), key:key}, children);
+            }
+            else
+                return React.createElement(Type, {...this.processProps(props), key:key}, children);
+        }
+    }
+
+    processProps(properties){
+        var props = {};
+        for(let p in properties)
+        {
+            if(p!=='Type' && p!=='content')
+            {
+                var expr = this.eval(properties[p]);
+                if(typeof expr==='string' && p==='style')
+                {
+                    let pp = expr.split(';');
+                    expr = {};
+                    for(let pp1 of pp)
+                    {
+                        let pp2 = pp1.split(':');
+                        expr[pp2[0].trim()] = pp2[1].trim();
+                    }
+                }
+                else if(typeof expr === "function")
+                {
+                    expr = expr.bind(this, properties[p]);
+                }
+                if(p==='class')
+                    props['className'] = expr;
+                else
+                    props[p] = expr;
+            }
+        }
+
+        return props;
+    }
+
+    render(){
+        if(this.state.hasError) return <div>
+                <h1>Something went wrong.</h1>
+                <button onClick={()=>this.setState({hasError:false})}>Reload</button>
+            </div>;
+        if(this.state.properties.Type!==undefined)
             try
             {
-                var cont = null;
-                if(this.state.properties.content!==undefined && this.state.properties.content.Type!==undefined)
-                {
-                    if(this.state.properties.iter===undefined)
-                    {
-                        let cc;
-                        var properties = this.state.properties;
-                        if(properties.channel!==undefined)
-                        {
-                            let dp = properties.channel.indexOf('.');
-                            let node = properties.channel.slice(0,dp);
-                            let port = properties.channel.slice(dp+1);
-                            cc = properties.content;
-                            cc.content = nw.getportvalue(node,port);
-                        }
-                        else
-                           cc = this.state.properties.content;
-                        if(typeof cc.properties === Object && ! ('Type' in cc.properties))
-                            cc = null;
-                        cont =  <Custom {...cc} />;
-                    }
-                    else
-                    {
-                        cont = [];
-                        var thelist;
-                        var template = this.state.properties.content;
-                        let properties = this.state.properties;
-                        //let dp = properties.channel.indexOf('.');
-                        //template.node = properties.channel.slice(0,dp);
-
-                        thelist = execution.getVal(properties.channel.replace('expr:', ''));
-                        for(var iter in thelist)
-                        {
-                            var theitem = JSON.stringify(template);
-                            //theitem = theitem.replace('{'+this.state.properties.iter+'}', iter);
-                            theitem = theitem.replace(new RegExp('{'+this.state.properties.iter+'}', 'g'), iter);
-                            cont.push(<Custom {...JSON.parse(theitem)} key={iter}  />)
-                        }
-                    }
-                }
-                else if(this.state.properties.content!==undefined && this.state.properties.content.__proto__.constructor.name==="Array")
-                {
-                    if(this.state.properties.iter===undefined)
-                    {
-                        cont = [];
-                        for(var cc in this.state.properties.content)
-                        {
-                            if(typeof this.state.properties.content[cc] === 'string')
-                                cont.push(this.state.properties.content[cc]);
-                            else
-                                cont.push(<Custom {...this.state.properties.content[cc]} key={cc}  />)
-                        }
-                    }
-                    else
-                    {
-                        cont = [];
-                        let thelist;
-                        let template = this.state.properties.content;
-                        let properties = this.state.properties;
-
-                        thelist = execution.getVal(properties.channel.replace('expr:', ''));
-                        for(let iter in thelist)
-                        {
-                            let theitem = JSON.stringify(template);
-                            //theitem = theitem.replace('{'+this.state.properties.iter+'}', iter);
-                            theitem = theitem.replace(new RegExp('{'+this.state.properties.iter+'}', 'g'), iter);
-
-                            let elements = JSON.parse(theitem);
-
-                            for(let cc of elements)
-                                cont.push(<Custom {...cc} key={iter}  />)
-                        }
-                    }
-                }
-                else if (this.state.properties.content!==undefined)
-                {
-                     cont = this.eval(this.state.properties.content);
-                }
-                var props = {};
-                for(let p in this.state.properties)
-                {
-                    if(p!=='Type' && p!=='content')
-                    {
-                        var expr = this.eval(this.state.properties[p]);
-                        if(typeof expr==='string' && p==='style')
-                        {
-                            let pp = expr.split(';');
-                            expr = {};
-                            for(let pp1 of pp)
-                            {
-                                let pp2 = pp1.split(':');
-                                expr[pp2[0].trim()] = pp2[1].trim();
-                            }
-                        }
-                        else if(typeof expr === "function")
-                        {
-                            expr = expr.bind(this, this.state.properties[p]);
-                        }
-                        if(p==='change')
-                            props['onChange'] = this.handleChange;
-                        else if(p==='submit')
-                            props['onSubmit'] = this.handleSubmit;
-                        if(p==='class')
-                            props['className'] = expr;
-                        else
-                            props[p] = expr;
-                    }
-                }
-
-                let comp;
-                if(this.state.properties.Type in Widget.components)
-                {
-                    // {ComponentName: component}
-                    comp = React.createElement(Widget.components[this.state.properties.Type], props, cont);
-                }
-                else
-                    comp = React.createElement(this.state.properties.Type, props, cont);
-                return comp;
+                return this.processElement(this.state.properties);
             }
             catch(e)
             {
+                console.log(e)
                 return null;
             }
         else

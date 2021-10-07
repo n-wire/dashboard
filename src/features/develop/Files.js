@@ -47,7 +47,8 @@ export default function Files() {
                 <ListItemText sx={{overflow: "hidden", textOverflow: "ellipsis", width: '11rem'}} primaryTypographyProps={{noWrap:true}} primary={file.name} 
                   onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}
                 />
-                <IconButton sx={{display:(index===deleteBtn.index && file.type===deleteBtn.type)?'inline':'none'}} aria-label="delete file" component="span" onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}>
+                <IconButton sx={{display:(index===deleteBtn.index && file.type===deleteBtn.type)?'inline':'none'}} aria-label="delete file" component="span"
+                  onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}>
                   <Delete color="error" onClick={()=>{
                     dispatch(deleteFile({name:file.name, type:'pages'}))
                   }} />
@@ -86,7 +87,7 @@ export default function Files() {
                 <ListItemText sx={{overflow: "hidden", textOverflow: "ellipsis", width: '11rem'}} primaryTypographyProps={{noWrap:true}} primary={file.name} 
                   onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}
                 />
-                <IconButton sx={{display:(index===deleteBtn.index && file.type===deleteBtn.type)?'inline':'none'}} aria-label="delete file" component="span" onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}>
+                <IconButton sx={{display:(index===deleteBtn.index && file.type===deleteBtn.type)?'inline':'none'}} aria-label="delete file" component="span" onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}>
                   <Delete color="error" onClick={()=>{
                     dispatch(deleteFile({name:file.name, type:'sketches'}))
                   }} />

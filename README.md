@@ -208,6 +208,15 @@ Dynamic List
 </div>
 ```
 
+formgroup
+==========
+<FormGroup>
+  <FormControlLabel control="component:{Type:'Checkbox', defaultChecked:'1'}" label="Label" />
+  <FormControlLabel disabled="1" control="component:{Type:'Checkbox'}" label="Disabled" />
+</FormGroup>
+
+
+
 Components
 ==================
 
