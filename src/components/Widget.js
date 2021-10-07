@@ -10,10 +10,14 @@ import {execution} from './Execution.js'
 
 export default class Widget extends React.Component{
     static components = [];
+    static pages = [];
     constructor(props) {
         super(props);
         console.log(props.content)
-        Widget.components = props.components!==undefined?props.components:[]
+        if(props.components!==undefined)
+            Widget.components = props.components;
+        if(props.pages !==undefined)
+            Widget.pages = props.pages;
         let lo = Widget.load(props.properties, props.content, props.format);
         let channel = (props.channels!==undefined && props.channels.indexOf('.')!==-1)?props.channel.split('.'):[null, null];
         this.state = {
@@ -46,7 +50,7 @@ export default class Widget extends React.Component{
             for(var p of Object.keys(props))
             {
                 var re = new RegExp("{"+p+"}", 'g');
-                content = content.replace(re, (typeof props[p]==='string' && props[p].trim().startsWith('expr:'))?execution.eval(props[p].trim().replace('expr:', '')):props[p]);
+                content = content.replace(re, props[p]);
             }
             if(content === '' || content===undefined) content='<div />';
             var parser = new DOMParser();
@@ -89,27 +93,7 @@ export default class Widget extends React.Component{
         else
            return null;
 
-        if(['Div', 'Form', 'fields','inlinefields'].indexOf(xmlDoc.tagName)!==-1){
-           json_object['children'] = [];
-           for(i = 0; i<xmlDoc.childNodes.length;i++)
-           {
-              let dnode = Widget.xml2json(xmlDoc.childNodes[i]);
-              if(dnode!=null)
-                json_object['children'].push(dnode);
-           }
-        }
-        else if(['Row', 'Column', 'Tabs', 'Accordion'].indexOf(xmlDoc.tagName)!==-1){
-           json_object['children'] = [];
-           for(i = 0; i<xmlDoc.children.length;i++)
-           {
-              json_object['children'].push(Widget.xml2json(xmlDoc.children[i]));
-           }
-        }
-        else if(xmlDoc.tagName==='Frame' || xmlDoc.tagName==="tab" || xmlDoc.tagName==="item")
-        {
-            json_object['content'] = Widget.xml2json(xmlDoc.children[0]);
-        }
-        else if(xmlDoc.attributes!==undefined && xmlDoc.attributes.getNamedItem('iter')!==null)
+        if(xmlDoc.attributes!==undefined && xmlDoc.attributes.getNamedItem('iter')!==null)
         {
             json_object['content'] = [];
             for(let v of xmlDoc.children)
@@ -117,24 +101,13 @@ export default class Widget extends React.Component{
         }
         else if(xmlDoc.childNodes.length>1)
         {
-           if(['dropdown', 'SearchSelection', 'tr'].indexOf(xmlDoc.tagName)!==-1)
-           {
-               json_object['content'] = [];
-               for(i = 0; i<xmlDoc.children.length;i++)
-               {
-                  json_object['content'].push(Widget.xml2json(xmlDoc.children[i]));
-               }
-           }
-           else
-           {
-               json_object['content'] = [];
-               for(i = 0; i<xmlDoc.childNodes.length;i++)
-               {
-                    let ob = Widget.xml2json(xmlDoc.childNodes[i]);
-                    if(ob!==null)
-                       json_object['content'].push(ob);
-                    }
-           }
+            json_object['content'] = [];
+            for(i = 0; i<xmlDoc.childNodes.length;i++)
+            {
+                let ob = Widget.xml2json(xmlDoc.childNodes[i]);
+                if(ob!==null)
+                    json_object['content'].push(ob);
+            }
         }
         else if(xmlDoc.childNodes.length!==0 && xmlDoc.tagName!=='img' && xmlDoc.tagName!=='script'){
             json_object['content'] = Widget.xml2json(xmlDoc.childNodes[0]);

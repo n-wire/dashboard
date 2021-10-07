@@ -39,6 +39,16 @@ export const developSlice = createSlice({
     activeFileIndex: 0
   },
   reducers: {
+    newProject: (state, action) =>{
+      state.project = {
+        title: '',
+        pages: [],
+        sketches: [],
+        images: []
+      };
+      state.openFiles = [];
+      state.activeFileIndex = 0;
+    },
     addFile: (state, action) => {
         if( state.project[action.payload.type].findIndex(file=>file.name===action.payload.name)===-1)
             state.project[action.payload.type].push({
@@ -109,7 +119,7 @@ export const developSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(loadProjectAsync.pending, (state) => {
-        state.status = {message:'loading', severity:'info'};
+        state.status = {message:'loading...', severity:'info'};
       })
       .addCase(loadProjectAsync.fulfilled, (state, action) => {
         state.status = {message:'loaded', severity:'success'};
@@ -119,27 +129,29 @@ export const developSlice = createSlice({
       }).addCase(loadProjectAsync.rejected, (state, action) => {
         state.status ={message:action.error.message, severity:'error'};
       }).addCase(saveProjectAsync.pending, (state) => {
-        state.status = {message:'loading', severity:'info'};
+        state.status = {message:'saving...', severity:'info'};
       })
       .addCase(saveProjectAsync.fulfilled, (state, action) => {
         state.status = {message:'saved', severity:'success'};
       }).addCase(saveProjectAsync.rejected, (state, action) => {
         state.status = {message:action.error.message, severity:'error'};;
       }).addCase(addImageAsync.pending, (state) => {
-        state.status = {message:'uploading', severity:'info'};
+        state.status = {message:'uploading...', severity:'info'};
       })
       .addCase(addImageAsync.fulfilled, (state, action) => {
         console.log(action.payload)
         state.status = {message:'uploaded', severity:'success'};
         if(state.project['images'].indexOf(action.payload)===-1)
-          state.project['images'].push(action.payload)
+          state.project['images'].push({
+            name: action.payload
+          })
       }).addCase(addImageAsync.rejected, (state, action) => {
         state.status = {message:action.error.message, severity:'error'};
       });
   },
 });
 
-export const { addFile, deleteFile, openFile, updateFile, closeFile, setStatus, setActiveFile } = developSlice.actions;
+export const { newProject, addFile, deleteFile, openFile, updateFile, closeFile, setStatus, setActiveFile } = developSlice.actions;
 export const selectProject = (state) => state.develop.project;
 export const selectOpenFiles = (state) => state.develop.openFiles;
 export const selectActiveFileIndex = (state) => state.develop.activeFileIndex;

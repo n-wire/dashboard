@@ -10,7 +10,7 @@ import Console from '../console/Console'
 import NoteIcon from '@mui/icons-material/Note';
 import FolderOpen from '@mui/icons-material/FolderOpen'
 import Save from '@mui/icons-material/Save'
-import { selectStatus, setStatus, loadProjectAsync, saveProjectAsync, selectProject} from './developSlice'
+import { selectStatus, setStatus, loadProjectAsync, saveProjectAsync, selectProject, newProject} from './developSlice'
 import { useDispatch, useSelector } from 'react-redux'
 
 export default function Develop(props) {
@@ -30,7 +30,7 @@ export default function Develop(props) {
                 <Grid container spacing={1}  sx={{display: 'flex', width:'100%', height: '100vh', flexDirection:'column'}}>
                     <Box xs={12} md={12} sx={{marginTop:1, marginBottom:1, width:'100%', backgroundColor: 'gray', display: { sm:'node', xs: 'none', md: 'block' }}}>
                         <Paper spacing={5} sx={{display:'flex'}}>
-                            <Button startIcon={<NoteIcon />}>
+                            <Button startIcon={<NoteIcon />} onClick={()=>dispatch(newProject())}>
                                 New
                             </Button>
                             <Button startIcon={<FolderOpen />} onClick={()=>dispatch(loadProjectAsync('test2'))}>
@@ -57,7 +57,7 @@ export default function Develop(props) {
                             </IconButton>
                         </Paper>
                     </Box>
-                    <Grid container item spacing={1} sx={{display:'flex', flex:1, overflowY:'auto'}}>
+                    <Grid container item spacing={1} sx={{display:'flex', flex:1, overflow:'hidden'}}>
                         <Grid item xs={12} md={4} lg={2}>
                             <Paper sx={{height:'100%'}}>
                                 <Explorer />

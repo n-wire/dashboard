@@ -8,35 +8,51 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { TextField, Button, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Controls from './Controls'
+import { thedoc, activefile } from '../code/Code';
+import { updateFile } from '../develop/developSlice';
+import { useDispatch } from 'react-redux';
 
 export default function Properties(props) {
+  const dispatch = useDispatch();
   const [values, setValues] = React.useState([]);
-  const copy = () =>{
-    navigator.permissions.query({name: "clipboard-write"}).then(result => {
-        if (result.state == "granted" || result.state == "prompt") {
-          let attributes = values.map((v,i)=>v===undefined||v===''?'':`${Object.keys(control.properties)[i]}="${v}"`)
-          let element;
-          if(Object.keys(control.properties).indexOf('content')===-1){
-            element = `<${control.name} ${attributes.filter(a=>a!=='').join('\n    ')} />`
-          }
-          else
-          {
-            let content = values[Object.keys(control.properties).indexOf('content')] || ''
-            attributes.splice(Object.keys(control.properties).indexOf('content'),1)
-            element = `<${control.name} ${attributes.filter(a=>a!=='').join('\n    ')} >${'\n    '+content+'\n'}</${control.name}>`
-          }
-          navigator.clipboard.writeText(element).then(function() {
-              alert('copied to clippboard')
-          }, function() {
-              alert('failed to copy')
-          });
-        }
-    });
+
+  React.useEffect(() => {
+    let control = Controls().find(c=>c.name===props.selected);
+    let v = []
+    Object.entries(control?.properties || {}).map(([name, type], index) => v[index] = (typeof type === "string")?type:type[0])
+    setValues(v)
+  }, [props.selected]);
+
+  const update = ()=> {
+    dispatch(updateFile({name: activefile.name, content: thedoc.getValue(), type: activefile.type}))
   }
-  const control = Controls().find(c=>c.name==props.selected);
-  console.log(values)
+  const copy = () =>{
+    if(control === undefined) return;
+    let attributes = values.map((v,i)=>v===undefined||v===''?'':`${Object.keys(control.properties)[i]}="${v}"`)
+    let element;
+    if('template' in control)
+    {
+      element = control.template;
+    }
+    else if(Object.keys(control.properties).indexOf('content')===-1){
+      element = `<${control.tag} ${attributes.filter(a=>a!=='').join('\n    ')} />`
+    }
+    else
+    {
+      let content = values[Object.keys(control.properties).indexOf('content')] || ''
+      attributes.splice(Object.keys(control.properties).indexOf('content'),1)
+      element = `<${control.tag} ${attributes.filter(a=>a!=='').join('\n    ')} >${'\n    '+content+'\n'}</${control.name}>`
+    }
+    if(thedoc!==undefined){
+      thedoc.replaceSelection(element, 'around');
+      update();
+    }
+  }
+  
+  const control = Controls().find(c=>c.name===props.selected);
+
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{overflow:'clip'}}>
       <Table sx={{ minWidth: 100 }} size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
@@ -87,7 +103,7 @@ export default function Properties(props) {
           ))}
         </TableBody>
       </Table>
-      <Button sx={{width:'100%'}} onClick={()=>copy(props.selected)}>Copy</Button>
+      <Button sx={{width:'100%'}} onClick={()=>copy(props.selected)}>Update</Button>
     </TableContainer>
   );
 }

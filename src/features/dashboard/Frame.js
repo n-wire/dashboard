@@ -50,9 +50,19 @@ import Stepper from '@mui/material/Stepper';
 import { StepIcon, StepContent, StepConnector, Step, MobileStepper, SpeedDialAction, SpeedDial, Popper, Popover, MenuList, Pagination, Menu } from '@mui/material';
 import { AppBar, Toolbar, AccordionDetails, AccordionActions, Breadcrumbs, Accordion, Drawer, CardActions } from '@mui/material';
 
+function Autocomplete2(props) {
+    const {label, others} = props;
+    return (
+        <Autocomplete
+            {...others}
+            renderInput={(params) => <TextField {...params} label={label} />}
+        />
+    );
+};
+
 const components = {'Counter': Counter, 'Controller': Controller, 'Console': Console, 'Code': Code, 
 'Box': Box, 'Container': Container, 'Grid': Grid, 'Paper': Paper, 'Stack': Stack, 'ImageList': ImageList, 'ImageListItem': ImageListItem,
-'Button': Button, 'AutoComplete': Autocomplete, 'ButtonGroup': ButtonGroup, 'Checkbox': Checkbox, 'Fab': Fab, 
+'Button': Button, 'AutoComplete2': Autocomplete2, 'ButtonGroup': ButtonGroup, 'Checkbox': Checkbox, 'Fab': Fab, 
 'Radio': Radio, 'RadioGroup': RadioGroup, 'FormControlLabel': FormControlLabel, 'FormControl': FormControl, 'FormLabel': FormLabel, 'FormGroup': FormGroup,
 'Rating': Rating, 'Typography': Typography, 'Select': Select, 'InputLabel': InputLabel, 'NativeSelect': NativeSelect, 'Slider': Slider, 'Switch': Switch,
 'TextField': TextField, 'Input': Input, 'List': List, 'ListItem': ListItem, 'ListItemIcon': ListItemIcon, 'ListItemText': ListItemText, 

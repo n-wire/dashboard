@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Code from '../code/Code'
 import { useDispatch, useSelector } from 'react-redux';
-import { closeFile, selectActiveFileIndex, selectOpenFiles, setActiveFile } from './developSlice';
+import { closeFile, selectActiveFileIndex, selectOpenFiles, selectProject, setActiveFile } from './developSlice';
 import { Close } from '@mui/icons-material';
 import { IconButton, Grid} from '@mui/material';
 import { red } from '@mui/material/colors';
@@ -49,6 +49,7 @@ export default function MainPage() {
   const dispatch = useDispatch();
   const activeFile = useSelector(selectActiveFileIndex);
   const files = useSelector(selectOpenFiles);
+  const project = useSelector(selectProject);
   const [overme, setOverme] = React.useState(-1);
   const [codeHeight, setCodeHeight] = React.useState(0);
 
@@ -66,7 +67,7 @@ export default function MainPage() {
   const handleSize = ()=> {
     var elmnt = document.getElementById("myDIV");
     var header = document.getElementById("tabheader");
-    setCodeHeight(elmnt.clientHeight-(header.clientHeight+5));
+    setCodeHeight(elmnt?.clientHeight-(header?.clientHeight+5));
   }
 
   return (
@@ -98,7 +99,7 @@ export default function MainPage() {
                 <Grid item xs={file.type==='pages'?6:'auto'} sx={{display:'flex', flex:1, height:'100%', width:'100%', overflowY:'hidden'}}>
                   <Code content={file.content} mode={file.type==='pages'?"htmlmixed":"python"} height={codeHeight} />
                 </Grid>
-                {file.type==='pages' && <Grid item xs={6} sx={{width:'100%'}} sx={{overflowY:'scroll', marginTop:3}}><Frame sx={{display:'flex', flex:1, margin:1}} content={file.content} name="preview_???" /></Grid>}
+                {file.type==='pages' && <Grid item xs={6} sx={{overflowY:'scroll', marginTop:3, width:'100%'}}><Frame sx={{display:'flex', flex:1, margin:1}} content={file.content} name="preview_???" pages={project.pages} /></Grid>}
               </Grid>
             </TabPanel>
           ))

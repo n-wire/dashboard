@@ -35,11 +35,14 @@ export function saveProject(project) {
 
 export function addImage(file){
   return new Promise((resolve, reject)=>{
-    let formData = new FormData();
+    var form_data = new FormData();
+    form_data.append('files', file);
 
-		formData.append('File', file, file.name);
+    for (var key of form_data.entries()) {
+        console.log(key[0] + ', ' + key[1]);
+    }
 
-    console.log(file, formData)
+    console.log(file, form_data)
 
     fetch(window.location.protocol+'//' + nw.server + `:${process.env.REACT_APP_API_SERVER_PORT}/upload`, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -47,15 +50,15 @@ export function addImage(file){
         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         credentials: 'include', // include, *same-origin, omit
         headers: {
-        'Content-Type': 'application/json',
+        //'Content-Type': 'multipart/form-data',
         'Authorization': 'Bearer ' + nw.token
         },
         redirect: 'follow', // manual, *follow, error
         referrerPolicy: 'no-referrer', // no-referrer, *client
-        body: formData,
+        body: form_data,
     })
-			.then((response) => response.json())
 			.then((result) => {
+        console.log(result);
 				resolve(file.name);
 			})
 			.catch((error) => {
