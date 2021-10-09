@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Box, Button, Grid, Container, CssBaseline, Snackbar, Alert, Typography, IconButton } from '@mui/material'
 import { Paper } from '@mui/material'
-import { Folder, ExitToApp, PlayArrow, Phonelink, CloudUpload, CloudDownload, ExitToAppOutlined } from '@mui/icons-material'
+import { Folder, ExitToApp, PlayArrow, Phonelink, CloudUpload, CloudDownload, ExitToAppOutlined, Stop } from '@mui/icons-material'
 import MainPage from './MainPage'
 import Explorer from './Explorer'
 import Toolbox from './Toolbox'
@@ -12,8 +12,13 @@ import FolderOpen from '@mui/icons-material/FolderOpen'
 import Save from '@mui/icons-material/Save'
 import { selectStatus, setStatus, loadProjectAsync, saveProjectAsync, selectProject, newProject} from './developSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import SaveDialog from './saveDialog'
+import OpenDialog from './openDialog'
+import { nw } from 'nodewire'
 
 export default function Develop(props) {
+    const [saveProject, setSaveProject] = useState(false)
+    const [openProject, setOpenProject] = useState(false)
     const dispatch = useDispatch()
     const status = useSelector(selectStatus);
     const project = useSelector(selectProject);
@@ -27,20 +32,41 @@ export default function Develop(props) {
                     onClose={handleClose}>
                     <Alert severity={status.severity}>{status.message}</Alert>
                 </Snackbar>
+                <SaveDialog open={saveProject} 
+                    onClose={()=>setSaveProject(false)}
+                    onSave={filename=>dispatch(saveProjectAsync({...project, title: filename}))}
+                />
+                <OpenDialog open={openProject} 
+                    onClose={()=>setOpenProject(false)}
+                    onOpen={filename=>dispatch(loadProjectAsync(filename))}
+                />
                 <Grid container spacing={1}  sx={{display: 'flex', width:'100%', height: '100vh', flexDirection:'column'}}>
                     <Box xs={12} md={12} sx={{marginTop:1, marginBottom:1, width:'100%', backgroundColor: 'gray', display: { sm:'node', xs: 'none', md: 'block' }}}>
                         <Paper spacing={5} sx={{display:'flex'}}>
                             <Button startIcon={<NoteIcon />} onClick={()=>dispatch(newProject())}>
                                 New
                             </Button>
-                            <Button startIcon={<FolderOpen />} onClick={()=>dispatch(loadProjectAsync('test2'))}>
+                            <Button startIcon={<FolderOpen />} onClick={()=>setOpenProject(true)}>
                                 Open
                             </Button>
-                            <Button startIcon={<Save />} onClick={()=>dispatch(saveProjectAsync(project))}>
+                            <Button startIcon={<Save />} onClick={()=>{
+                                if(project.title!=='')
+                                    dispatch(saveProjectAsync(project))
+                                else
+                                    setSaveProject(true);
+                            }}>
                                 Save
                             </Button>
-                            <Button startIcon={<PlayArrow />}>
+                            <Button startIcon={<PlayArrow />} onClick={()=>{
+                                nw.send(`ee set scriptlet "exec('${project.title}')" ${nw.address}`);
+                                nw.getNode(project.title);
+                            }}>
                                 Run
+                            </Button>
+                            <Button startIcon={<Stop />} onClick={()=>{
+                                nw.send(`ee set scriptlet "kill('${project.title}')" ${nw.address}`);
+                            }}>
+                                Stop
                             </Button>
                             <Button startIcon={<Phonelink />}>
                                 Deploy

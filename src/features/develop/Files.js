@@ -8,9 +8,10 @@ import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Add, Delete, Description, Folder, PhotoCamera } from '@mui/icons-material';
-import { addFile, deleteFile, openFile, selectProject, addImageAsync } from './developSlice';
+import { addFile, deleteFile, deleteImageAsync, openFile, selectProject, addImageAsync, setStatus } from './developSlice';
 import FileDialog from './fileDialog';
 import { IconButton, Input } from '@mui/material';
+import { nw } from 'nodewire';
 
 export default function Files() {
   const project = useSelector(selectProject);
@@ -22,6 +23,18 @@ export default function Files() {
   const [addSketch, setAddsketch] = React.useState(false);
   const [deleteBtn, setDeleteBtn] = React.useState({type:'', index:-1});
 
+  const handleDeleteImage = (file)=> {
+    const filename = window.location.protocol+'//' + nw.server + `:${process.env.REACT_APP_API_SERVER_PORT}/storage/${nw.instance}/${file.name}`;
+    navigator.permissions.query({name: "clipboard-write"}).then(result => {
+      if (result.state == "granted" || result.state == "prompt") {
+        navigator.clipboard.writeText(encodeURI(filename)).then(function() {
+          dispatch(setStatus({message:'image url copied to clipboard', severity:'info'}));
+        }, function() {
+          dispatch(setStatus({message:'image url not copied', severity:'warning'}));
+        });
+      }
+    });
+  }
 
   return (
     <List
@@ -118,12 +131,18 @@ export default function Files() {
       <Collapse in={images} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {
-            project.images.map(file=>(
+            project.images.map((file, index)=>(
               <ListItemButton key={file.name} sx={{ pl: 4 }}>
-                <ListItemIcon>
+                <ListItemIcon onClick={()=>handleDeleteImage(file)}>
                   <Description />
                 </ListItemIcon>
-                <ListItemText primary={file.name} />
+                <ListItemText primary={file.name} onClick={()=>handleDeleteImage(file)} onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})} />
+                <IconButton sx={{display:(index===deleteBtn.index && file.type===deleteBtn.type)?'inline':'none'}} aria-label="delete file" component="span" 
+                  onMouseEnter={()=>setDeleteBtn({type:file.type, index:index})} onMouseLeave={()=>setDeleteBtn({type:file.type, index:-1})}>
+                  <Delete color="error" onClick={()=>{
+                    dispatch(deleteImageAsync({name:file.name}))
+                  }} />
+                </IconButton>
               </ListItemButton>
             ))
           }

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { loadProject, saveProject, addImage } from './developAPI';
+import { loadProject, saveProject, addImage, deleteImage } from './developAPI';
 
 export const loadProjectAsync = createAsyncThunk(
     'develop/loadProject',
@@ -25,12 +25,20 @@ export const addImageAsync = createAsyncThunk(
   }
 );
 
+export const deleteImageAsync = createAsyncThunk(
+  'develop/deleteImage',
+  async (filename) => {
+    const response = await deleteImage(filename);
+    return response;
+  }
+);
+
 export const developSlice = createSlice({
   name: 'develop',
   initialState:{
     status: '',
     project: {
-        title: 'test2',
+        title: '',
         pages: [],
         sketches: [],
         images: []
@@ -52,9 +60,9 @@ export const developSlice = createSlice({
     addFile: (state, action) => {
         if( state.project[action.payload.type].findIndex(file=>file.name===action.payload.name)===-1)
             state.project[action.payload.type].push({
-                name: action.payload.name,
-                content: '',
-                type: action.payload.type
+              name: action.payload.name,
+              content: '',
+              type: action.payload.type
             });
         else
             state.status = {
@@ -139,13 +147,21 @@ export const developSlice = createSlice({
         state.status = {message:'uploading...', severity:'info'};
       })
       .addCase(addImageAsync.fulfilled, (state, action) => {
-        console.log(action.payload)
         state.status = {message:'uploaded', severity:'success'};
         if(state.project['images'].indexOf(action.payload)===-1)
           state.project['images'].push({
             name: action.payload
           })
       }).addCase(addImageAsync.rejected, (state, action) => {
+        state.status = {message:action.error.message, severity:'error'};
+      }).addCase(deleteImageAsync.pending, (state) => {
+        state.status = {message:'deleting...', severity:'info'};
+      })
+      .addCase(deleteImageAsync.fulfilled, (state, action) => {
+        state.status = {message:'deleted', severity:'success'};
+        let index = state.project['images'].findIndex(file=>file.name===action.payload.name);
+        state.project['images'].splice(index, 1);
+      }).addCase(deleteImageAsync.rejected, (state, action) => {
         state.status = {message:action.error.message, severity:'error'};
       });
   },

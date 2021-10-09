@@ -73,7 +73,7 @@ export default function Properties(props) {
                 {name}
               </TableCell>
               <TableCell align="right">
-                {typeof type === "string" && <TextField variant="standard" value={values[index]} onChange={e=>{
+                {typeof type === "string" && <TextField variant="outlined" size="small" fullWidth value={values[index]} onChange={e=>{
                   let v = [...values]
                   v[index] = e.target.value;
                   setValues(v)
@@ -83,7 +83,9 @@ export default function Properties(props) {
                     <FormControl fullWidth>
                       <InputLabel></InputLabel>
                       <Select
+                        size="small"
                         value={values[index]}
+                        fullWidth 
                         onChange={e=>{
                           let v = [...values]
                           v[index] = e.target.value;
@@ -92,7 +94,7 @@ export default function Properties(props) {
                       >
                         {
                           type.map(option=>(
-                            <MenuItem value={option}>{option}</MenuItem>
+                            <MenuItem sx={{width:'100%', margin:'auto'}}  value={option}>{option}</MenuItem>
                           ))
                         }
                       </Select>
