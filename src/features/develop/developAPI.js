@@ -39,23 +39,23 @@ export function addImage(file){
     form_data.append('files', file);
 
     for (var key of form_data.entries()) {
-        console.log(key[0] + ', ' + key[1]);
+      console.log(key[0] + ', ' + key[1]);
     }
 
     console.log(file, form_data)
 
     fetch(window.location.protocol+'//' + nw.server + `:${process.env.REACT_APP_API_SERVER_PORT}/upload`, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'include', // include, *same-origin, omit
-        headers: {
-        //'Content-Type': 'multipart/form-data',
-        'Authorization': 'Bearer ' + nw.token
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *client
-        body: form_data,
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'include', // include, *same-origin, omit
+      headers: {
+      //'Content-Type': 'multipart/form-data',
+      'Authorization': 'Bearer ' + nw.token
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *client
+      body: form_data,
     })
 			.then((result) => {
         console.log(result);
@@ -65,5 +65,30 @@ export function addImage(file){
 				reject(error);
 			});
   })
+}
+
+  export function deleteImage(file){
+    return new Promise((resolve, reject)=>{
+      fetch(window.location.protocol+'//' + nw.server + `:${process.env.REACT_APP_API_SERVER_PORT}/remove/${file.name}`, {
+        method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'include', // include, *same-origin, omit
+        headers: {
+        //'Content-Type': 'multipart/form-data',
+        'Authorization': 'Bearer ' + nw.token
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *client
+        body: {},
+      })
+        .then((result) => {
+          console.log(result);
+          resolve(result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    })
 }
   
